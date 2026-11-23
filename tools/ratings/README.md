@@ -18,6 +18,7 @@ python3 make.py match.json        # out/<slug>/ 에 01~04 PNG + JPG
 | cover.credit | 출처 (모르면 생략) |
 | cover.focus_x / focus_y | 크롭 기준 0~1 (기본 0.5 / 0) |
 | teams[] | 2팀. logo(assets/logos_white 파일명), name, score, players |
+| teams[].photo | 팀 평점 장 위쪽 사진 {photo, credit, focus_x, focus_y} (없으면 큰 로고 워터마크) |
 | players[] | 5명. pos(top/jungle/mid/bot/support), name, rating(0~10), pog(선택), note(선택 한줄평) |
 
 로고: bfx dk dns drx geng hle kt ns t1 (한진 브리온은 없음 → 팀 이름 텍스트로 대체)

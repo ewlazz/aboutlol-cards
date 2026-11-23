@@ -100,37 +100,64 @@ def cover(m, out):
     return page(body, css)
 
 
-def team_card(m, i, pageno):
+def band(src, dst, fx=0.5, fy=0.2, h=620):
+    im = Image.open(src).convert('RGB')
+    s = max(1080 / im.width, h / im.height)
+    w, hh = round(im.width * s), round(im.height * s)
+    im = im.resize((w, hh), Image.LANCZOS)
+    if s > 1.15:
+        im = im.filter(ImageFilter.UnsharpMask(1.3, 50, 2))
+    x0 = int(min(max(fx * w - 540, 0), w - 1080))
+    y0 = int(min(max(fy * (hh - h), 0), hh - h))
+    im.crop((x0, y0, x0 + 1080, y0 + h)).save(dst, quality=95)
+
+
+def team_card(m, i, pageno, out):
     t = m['teams'][i]
     o = m['teams'][1 - i]
     win = t['score'] > o['score']
+    ph = t.get('photo') or {}
     css = f"""
-.res {{ position: absolute; left: 72px; top: 124px; font-size: 32px; font-weight: 700; color: {DIM}; }}
-.res b {{ color: {'#FFF' if win else DIM}; margin-left: 14px; }}
-.list {{ position: absolute; left: 72px; right: 72px; top: 220px; }}
-.r {{ display: flex; align-items: center; gap: 40px; padding: 30px 0; border-top: 1px solid rgba(255,255,255,0.14); }}
+.ph {{ position: absolute; left: 0; top: 0; width: 1080px; height: 620px; }}
+.ph img {{ width: 1080px; height: 620px; display: block; }}
+.ph .t {{ position: absolute; left: 0; top: 0; width: 1080px; height: 200px; background: linear-gradient(rgba(11,11,14,0.7), rgba(11,11,14,0)); }}
+.ph .b {{ position: absolute; left: 0; bottom: 0; width: 1080px; height: 300px; background: linear-gradient(rgba(11,11,14,0), #0B0B0E); }}
+.wm {{ position: absolute; right: -60px; top: 90px; opacity: 0.08; }}
+.hd {{ position: absolute; left: 72px; top: 56px; display: flex; align-items: center; gap: 22px; font-size: 40px; font-weight: 900; }}
+.hd img {{ max-width: 160px; height: auto !important; max-height: 56px; }}
+.res {{ position: absolute; left: 72px; top: 476px; font-size: 34px; font-weight: 700; color: rgba(255,255,255,0.75); }}
+.res b {{ margin-left: 14px; color: {'#FFF' if win else DIM}; }}
+.list {{ position: absolute; left: 72px; right: 72px; top: 560px; }}
+.r {{ display: flex; align-items: center; gap: 34px; padding: 20px 0; border-top: 1px solid rgba(255,255,255,0.14); }}
 .r:first-child {{ border-top: none; }}
-.r img {{ width: 72px; height: 72px; flex: none; }}
+.r .ic {{ width: 60px; height: 60px; flex: none; }}
 .who {{ flex: 1; min-width: 0; }}
-.nm {{ font-size: 84px; font-weight: 900; letter-spacing: -0.035em; line-height: 1; display: flex; align-items: center; gap: 24px; }}
-.nm .tag {{ font-family: 'IDisp'; font-size: 30px; font-weight: 700; color: {LAV}; letter-spacing: 0; }}
-.note {{ font-size: 28px; font-weight: 500; color: {DIM}; margin-top: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-.rt {{ font-family: 'IDisp'; font-weight: 900; font-size: 116px; letter-spacing: -0.04em; line-height: 1; margin-left: 30px; }}
+.nm {{ font-size: 70px; font-weight: 900; letter-spacing: -0.035em; line-height: 1; display: flex; align-items: center; gap: 22px; }}
+.nm .tag {{ font-family: 'IDisp'; font-size: 28px; font-weight: 700; color: {LAV}; letter-spacing: 0; }}
+.note {{ font-size: 26px; font-weight: 500; color: {DIM}; margin-top: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+.rt {{ font-family: 'IDisp'; font-weight: 900; font-size: 100px; letter-spacing: -0.04em; line-height: 1; margin-left: 30px; }}
 .rt.low {{ color: {DIM}; }}
-.foot {{ position: absolute; left: 72px; bottom: 72px; }}
 """
+    if ph.get('photo'):
+        dst = out / f'band_{i}.jpg'
+        band(ph['photo'], dst, ph.get('focus_x', 0.5), ph.get('focus_y', 0.2))
+        top = f'<div class="ph"><img src="{uri(dst)}"><div class="t"></div><div class="b"></div></div>'
+    else:
+        top = f'<div class="wm">{logo(t, 560)}</div>'
     rows = []
     for p in t['players']:
         r = float(p['rating'])
         tag = '<span class="tag">POG</span>' if p.get('pog') else ''
         note = f'<div class="note">{esc(p["note"])}</div>' if p.get('note') else ''
-        rows.append(f'<div class="r"><img src="{uri(A/"icons"/(p["pos"]+"_w.png"))}">'
+        rows.append(f'<div class="r"><img class="ic" src="{uri(A/"icons"/(p["pos"]+"_w.png"))}">'
                     f'<div class="who"><div class="nm">{esc(p["name"])}{tag}</div>{note}</div>'
                     f'<div class="rt{" low" if r < m.get("low_below", 6.0) else ""}">{r:.1f}</div></div>')
-    body = f"""<div class="tl">{esc(t['name'])} 평점</div><div class="tr">{pageno} / 04</div>
+    credit = f'<div class="cr" style="bottom:auto;top:560px;top:524px">{esc(ph["credit"])}</div>' if ph.get('credit') else ''
+    body = f"""{top}
+<div class="hd">{logo(t, 56)}<span>평점</span></div><div class="tr">{pageno} / 04</div>
 <div class="res">vs {esc(o['name'])} <span class="en">{t['score']} : {o['score']}</span><b>{'승' if win else '패'}</b></div>
-<div class="list">{''.join(rows)}</div>
-<div class="foot">{logo(t, 110)}</div>"""
+{credit}
+<div class="list">{''.join(rows)}</div>"""
     return page(body, css)
 
 
@@ -186,8 +213,8 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     a, b = m['teams']
     cards = [('01_cover', cover(m, out)),
-             (f"02_{a.get('logo') or 'team_a'}", team_card(m, 0, '02')),
-             (f"03_{b.get('logo') or 'team_b'}", team_card(m, 1, '03')),
+             (f"02_{a.get('logo') or 'team_a'}", team_card(m, 0, '02', out)),
+             (f"03_{b.get('logo') or 'team_b'}", team_card(m, 1, '03', out)),
              ('04_end', outro())]
     from playwright.sync_api import sync_playwright
     with sync_playwright() as pw:
