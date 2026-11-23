@@ -25,3 +25,4 @@ python3 make.py match.json        # out/<slug>/ 에 01~04 PNG + JPG
 
 팀 평점 장: pog:true 선수(없으면 최고점)를 크게, 나머지 4명은 2×2.
 평점 색: 9.0+ 파랑 / 8.0+ 초록 / 7.0+ 연두 / 6.0+ 주황 / 6.0 미만 빨강
+숫자 폰트: Anton (match.json 에 "num_font" 로 바꿀 수 있음: inter, barlow, barlow-upright, bebas, anton, shoulders, saira, teko)

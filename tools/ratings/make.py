@@ -12,6 +12,18 @@ from PIL import Image, ImageFilter
 HERE = pathlib.Path(__file__).resolve().parent
 A = HERE / 'assets'
 POS = ['top', 'jungle', 'mid', 'bot', 'support']
+# 숫자 폰트: 이름 -> (파일, 스타일, 크기 배율)
+NUMFONTS = {
+    'inter': ('InterDisplay-Black.otf', 'normal', 1.0),
+    'barlow': ('barlow-condensed-latin-900-italic.woff2', 'italic', 1.25),
+    'barlow-upright': ('barlow-condensed-latin-800-normal.woff2', 'normal', 1.25),
+    'bebas': ('bebas-neue-latin-400-normal.woff2', 'normal', 1.35),
+    'anton': ('anton-latin-400-normal.woff2', 'normal', 1.15),
+    'shoulders': ('big-shoulders-display-latin-900-normal.woff2', 'normal', 1.3),
+    'saira': ('saira-extra-condensed-latin-900-normal.woff2', 'normal', 1.35),
+    'teko': ('teko-latin-700-normal.woff2', 'normal', 1.45),
+}
+NUM = {'font': 'anton'}
 DIM = 'rgba(255,255,255,0.55)'
 LAV = '#A9A3F0'
 
@@ -33,6 +45,7 @@ def base_css():
 @font-face {{ font-family: 'IDisp'; font-weight: 900; src: url('{uri(f/'InterDisplay-Black.otf')}'); }}
 @font-face {{ font-family: 'IDisp'; font-weight: 700; src: url('{uri(f/'InterDisplay-Bold.otf')}'); }}
 @font-face {{ font-family: 'IDisp'; font-weight: 500; src: url('{uri(f/'InterDisplay-Medium.otf')}'); }}
+@font-face {{ font-family: 'Num'; src: url('{uri(f/NUMFONTS[NUM['font']][0])}'); font-style: {NUMFONTS[NUM['font']][1]}; }}
 * {{ margin: 0; padding: 0; box-sizing: border-box; }}
 html, body {{ width: 1080px; height: 1350px; }}
 body {{ background: #0B0B0E; color: #FFF; font-family: 'Pretendard', sans-serif; position: relative; overflow: hidden;
@@ -44,7 +57,19 @@ body {{ background: #0B0B0E; color: #FFF; font-family: 'Pretendard', sans-serif;
 """
 
 
+import re
+
+
+def numify(css):
+    f, st, k = NUMFONTS[NUM['font']]
+    def rep(m):
+        sel, size = m.group(1), int(m.group(2))
+        return f"{sel} {{ font-family: 'Num'; font-style: {st}; font-weight: 400; font-size: {round(size*k)}px; letter-spacing: 0; line-height: 0.85;"
+    return re.sub(r"(\.sc \.n|\.hero \.rt|\.o \.v) \{ font-family: 'IDisp'; font-weight: 900; font-size: (\d+)px; letter-spacing: [-.\d]+em;( line-height: [.\d]+;)?", rep, css)
+
+
 def page(body, css=''):
+    css = numify(css)
     return f'<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><style>{base_css()}{css}</style></head><body>{body}</body></html>'
 
 
@@ -223,6 +248,7 @@ def main():
     ap.add_argument('--out')
     args = ap.parse_args()
     m = json.loads(pathlib.Path(args.spec).read_text(encoding='utf-8'))
+    NUM['font'] = m.get('num_font', NUM['font'])
     validate(m)
     out = pathlib.Path(args.out or HERE / 'out' / m['slug']).resolve()
     out.mkdir(parents=True, exist_ok=True)
