@@ -112,52 +112,67 @@ def band(src, dst, fx=0.5, fy=0.2, h=620):
     im.crop((x0, y0, x0 + 1080, y0 + h)).save(dst, quality=95)
 
 
+RC = [(9.0, '#6FA8FF'), (8.0, '#3DD68C'), (7.0, '#B4E05A'), (6.0, '#F2B84B'), (0.0, '#F0645A')]
+
+
+def rcolor(r):
+    for th, c in RC:
+        if r >= th:
+            return c
+    return RC[-1][1]
+
+
+POSKO = {'top': '탑', 'jungle': '정글', 'mid': '미드', 'bot': '원딜', 'support': '서폿'}
+
+
 def team_card(m, i, pageno, out):
     t = m['teams'][i]
     o = m['teams'][1 - i]
     win = t['score'] > o['score']
     ph = t.get('photo') or {}
-    css = f"""
-.ph {{ position: absolute; left: 0; top: 0; width: 1080px; height: 620px; }}
-.ph img {{ width: 1080px; height: 620px; display: block; }}
-.ph .t {{ position: absolute; left: 0; top: 0; width: 1080px; height: 200px; background: linear-gradient(rgba(11,11,14,0.7), rgba(11,11,14,0)); }}
-.ph .b {{ position: absolute; left: 0; bottom: 0; width: 1080px; height: 300px; background: linear-gradient(rgba(11,11,14,0), #0B0B0E); }}
-.wm {{ position: absolute; right: -60px; top: 90px; opacity: 0.08; }}
-.hd {{ position: absolute; left: 72px; top: 56px; display: flex; align-items: center; gap: 22px; font-size: 40px; font-weight: 900; }}
-.hd img {{ max-width: 160px; height: auto !important; max-height: 56px; }}
-.res {{ position: absolute; left: 72px; top: 476px; font-size: 34px; font-weight: 700; color: rgba(255,255,255,0.75); }}
-.res b {{ margin-left: 14px; color: {'#FFF' if win else DIM}; }}
-.list {{ position: absolute; left: 72px; right: 72px; top: 560px; }}
-.r {{ display: flex; align-items: center; gap: 34px; padding: 20px 0; border-top: 1px solid rgba(255,255,255,0.14); }}
-.r:first-child {{ border-top: none; }}
-.r .ic {{ width: 60px; height: 60px; flex: none; }}
-.who {{ flex: 1; min-width: 0; }}
-.nm {{ font-size: 70px; font-weight: 900; letter-spacing: -0.035em; line-height: 1; display: flex; align-items: center; gap: 22px; }}
-.nm .tag {{ font-family: 'IDisp'; font-size: 28px; font-weight: 700; color: {LAV}; letter-spacing: 0; }}
-.note {{ font-size: 26px; font-weight: 500; color: {DIM}; margin-top: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
-.rt {{ font-family: 'IDisp'; font-weight: 900; font-size: 100px; letter-spacing: -0.04em; line-height: 1; margin-left: 30px; }}
-.rt.low {{ color: {DIM}; }}
+    ps = t['players']
+    hero = next((p for p in ps if p.get('pog')), None) or max(ps, key=lambda p: float(p['rating']))
+    rest = [p for p in ps if p is not hero]
+    css = """
+.bg { position: absolute; inset: 0; width: 1080px; height: 1350px; }
+.sh { position: absolute; left: 0; bottom: 0; width: 1080px; height: 900px; background: linear-gradient(rgba(11,11,14,0), rgba(11,11,14,.92) 45%, #0B0B0E); }
+.tp { position: absolute; left: 0; top: 0; width: 1080px; height: 240px; background: linear-gradient(rgba(11,11,14,.8), rgba(11,11,14,0)); }
+.wm { position: absolute; right: -80px; top: 140px; opacity: 0.08; }
+.hd { position: absolute; left: 72px; top: 56px; display: flex; align-items: center; gap: 22px; font-size: 44px; font-weight: 900; }
+.hd img { max-width: 170px; height: auto !important; max-height: 60px; }
+.res { position: absolute; left: 72px; top: 140px; font-size: 32px; font-weight: 700; color: rgba(255,255,255,.8); }
+.res b { margin-left: 12px; }
+.hero { position: absolute; left: 72px; right: 72px; top: 640px; display: flex; align-items: flex-end; justify-content: space-between; }
+.hero .lb { font-family: 'IDisp', 'Pretendard'; font-size: 32px; font-weight: 700; color: #A9A3F0; }
+.hero .nm { font-size: 130px; font-weight: 900; letter-spacing: -.045em; line-height: 1; margin-top: 10px; }
+.hero .note { font-size: 30px; font-weight: 500; color: rgba(255,255,255,.65); margin-top: 18px; }
+.hero .rt { font-family: 'IDisp'; font-weight: 900; font-size: 230px; letter-spacing: -.05em; line-height: .85; }
+.grid { position: absolute; left: 72px; right: 72px; bottom: 80px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 56px; border-top: 1px solid rgba(255,255,255,.18); }
+.o { display: flex; align-items: center; gap: 20px; padding: 30px 0; border-bottom: 1px solid rgba(255,255,255,.1); }
+.o img { width: 52px; height: 52px; }
+.o .n { font-size: 48px; font-weight: 900; letter-spacing: -.03em; flex: 1; white-space: nowrap; }
+.o .v { font-family: 'IDisp'; font-weight: 900; font-size: 72px; letter-spacing: -.04em; }
 """
     if ph.get('photo'):
-        dst = out / f'band_{i}.jpg'
-        band(ph['photo'], dst, ph.get('focus_x', 0.5), ph.get('focus_y', 0.2))
-        top = f'<div class="ph"><img src="{uri(dst)}"><div class="t"></div><div class="b"></div></div>'
+        dst = out / f'hero_{i}.jpg'
+        crop_cover(ph['photo'], dst, ph.get('focus_x', 0.5), ph.get('focus_y', 0.0))
+        bg = f'<img class="bg" src="{uri(dst)}"><div class="tp"></div><div class="sh"></div>'
     else:
-        top = f'<div class="wm">{logo(t, 560)}</div>'
-    rows = []
-    for p in t['players']:
-        r = float(p['rating'])
-        tag = '<span class="tag">POG</span>' if p.get('pog') else ''
-        note = f'<div class="note">{esc(p["note"])}</div>' if p.get('note') else ''
-        rows.append(f'<div class="r"><img class="ic" src="{uri(A/"icons"/(p["pos"]+"_w.png"))}">'
-                    f'<div class="who"><div class="nm">{esc(p["name"])}{tag}</div>{note}</div>'
-                    f'<div class="rt{" low" if r < m.get("low_below", 6.0) else ""}">{r:.1f}</div></div>')
-    credit = f'<div class="cr" style="bottom:auto;top:560px;top:524px">{esc(ph["credit"])}</div>' if ph.get('credit') else ''
-    body = f"""{top}
-<div class="hd">{logo(t, 56)}<span>평점</span></div><div class="tr">{pageno} / 04</div>
+        bg = f'<div class="wm">{logo(t, 620)}</div>'
+    hr = float(hero['rating'])
+    lb = ('POG · ' if hero.get('pog') else '') + POSKO[hero['pos']]
+    note = f'<div class="note">{esc(hero["note"])}</div>' if hero.get('note') else ''
+    cells = ''.join(
+        f'<div class="o"><img src="{uri(A/"icons"/(p["pos"]+"_w.png"))}"><span class="n">{esc(p["name"])}</span>'
+        f'<span class="v" style="color:{rcolor(float(p["rating"]))}">{float(p["rating"]):.1f}</span></div>' for p in rest)
+    credit = f'<div class="cr">{esc(ph["credit"])}</div>' if ph.get('credit') else ''
+    body = f"""{bg}
+<div class="hd">{logo(t, 60)}<span>평점</span></div><div class="tr">{pageno} / 04</div>
 <div class="res">vs {esc(o['name'])} <span class="en">{t['score']} : {o['score']}</span><b>{'승' if win else '패'}</b></div>
-{credit}
-<div class="list">{''.join(rows)}</div>"""
+<div class="hero"><div><div class="lb">{lb}</div><div class="nm">{esc(hero['name'])}</div>{note}</div>
+<div class="rt" style="color:{rcolor(hr)}">{hr:.1f}</div></div>
+<div class="grid">{cells}</div>
+{credit}"""
     return page(body, css)
 
 

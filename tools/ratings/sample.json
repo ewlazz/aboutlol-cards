@@ -18,7 +18,7 @@
         {
           "pos": "top",
           "name": "도란",
-          "rating": 7.5
+          "rating": 9.0
         },
         {
           "pos": "jungle",
@@ -44,10 +44,10 @@
         }
       ],
       "photo": {
-        "photo": "/mnt/user-data/uploads/13c74a0f-image.webp",
-        "credit": "사진 디플러스 기아",
-        "focus_x": 0.55,
-        "focus_y": 0.15
+        "photo": "/home/claude/card10/img/kanavi_bg.jpg",
+        "credit": "",
+        "focus_x": 0.5,
+        "focus_y": 0.0
       }
     },
     {
@@ -74,7 +74,8 @@
           "pos": "bot",
           "name": "데프트",
           "rating": 7.0,
-          "note": "3세트 한타 캐리"
+          "note": "3세트 한타 캐리",
+          "pog": false
         },
         {
           "pos": "support",
@@ -85,8 +86,8 @@
       "photo": {
         "photo": "/mnt/user-data/uploads/d4cbb301-image.jpg",
         "credit": "",
-        "focus_x": 0.6,
-        "focus_y": 0.1
+        "focus_x": 0.55,
+        "focus_y": 0.0
       }
     }
   ]
