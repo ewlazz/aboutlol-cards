@@ -1,0 +1,23 @@
+{
+  "slug": "sample-dk-ns",
+  "date": "2027.01.15",
+  "league": "LCK 컵 1주차",
+  "low_below": 6.0,
+  "cover": { "photo": "/home/claude/card14/img/cover.jpg", "credit": "사진 한화생명e스포츠", "focus_x": 0.5, "focus_y": 0.0 },
+  "teams": [
+    { "logo": "dk", "name": "DK", "score": 2, "players": [
+      { "pos": "top", "name": "도란", "rating": 7.5 },
+      { "pos": "jungle", "name": "카나비", "rating": 8.5, "pog": true, "note": "초반 설계로 경기 주도" },
+      { "pos": "mid", "name": "쇼메이커", "rating": 7.0 },
+      { "pos": "bot", "name": "스매쉬", "rating": 7.5 },
+      { "pos": "support", "name": "딜라이트", "rating": 8.0 }
+    ]},
+    { "logo": "ns", "name": "농심", "score": 1, "players": [
+      { "pos": "top", "name": "킹겐", "rating": 6.5 },
+      { "pos": "jungle", "name": "표식", "rating": 5.5 },
+      { "pos": "mid", "name": "칼릭스", "rating": 6.0 },
+      { "pos": "bot", "name": "데프트", "rating": 7.0, "note": "3세트 한타 캐리" },
+      { "pos": "support", "name": "안딜", "rating": 5.0 }
+    ]}
+  ]
+}
